@@ -1,8 +1,8 @@
 {
   "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
   "version": 1,
-  "name": "Mi Repositorio IPTV Mejorado",
-  "description": "IPTVPlayer Extension - Versi\u00c3\u00b3n Mejorada",
+  "name": "IPTVPREMIUM",
+  "description": "IPTV Player Extension",
   "plugins": [
     {
       "url": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/main/builds/IPTVPlayer.cs3",
@@ -12,12 +12,9 @@
       "internalName": "IPTVPlayer",
       "authors": [
         "Phisher98",
-        "Adippe",
-        "TU_USUARIO",
-        "abgluisperez",
-        "abgluisperez2025"
+        "Adippe"
       ],
-      "description": "IPTV Player - Mejorado con parsing robusto y cach\u00c3\u00a9",
+      "description": "IPTV Player",
       "fileSize": 18382,
       "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
       "language": "es",
