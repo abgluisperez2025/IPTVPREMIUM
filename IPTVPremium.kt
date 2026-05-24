@@ -1,10 +1,11 @@
 class IPTVPremium : MainAPI() {
-    override var name = "TEST IPTV"
-    override var mainUrl = ""
+
+    override var name = "IPTV Premium"
+    override var mainUrl = "https://google.com"
     override var lang = "es"
+
+    override val hasMainPage = true
+    override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Live)
 
-    override suspend fun search(query: String): List<SearchResponse> {
-        return emptyList()
-    }
 }
