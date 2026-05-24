@@ -5,17 +5,12 @@
         "version": 6,
         "name": "IPTVPlayer",
         "internalName": "IPTVPlayer",
-        "authors": [
-            "Phisher98",
-            "Adippe"
-        ],
+        "authors": ["Phisher98", "Adippe"],
         "description": "IPTV Player",
         "fileSize": 18382,
         "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
         "language": "es",
-        "tvTypes": [
-            "Live"
-        ],
+        "tvTypes": ["Live"],
         "iconUrl": "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/Icons/IPTV.png",
         "apiVersion": 1,
         "fileHash": "sha256-bd01807e039e86004278cdd21b88940bf668d493d7b41688ffbea152337ee4f4",
