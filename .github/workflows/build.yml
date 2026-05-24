@@ -1,0 +1,35 @@
+name: Build Plugins
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Prepare build artifacts
+        run: |
+          mkdir -p build_output
+          find . -name "*.cs3" -exec cp {} build_output/ \;
+          find . -name "repo.json" -exec cp {} build_output/ \;
+
+      - name: Deploy to builds branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: builds
+          publish_dir: ./build_output
