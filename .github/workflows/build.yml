@@ -32,4 +32,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: builds
-          publish_dir: ./build_output
+          publish_dir: ./build_output 
