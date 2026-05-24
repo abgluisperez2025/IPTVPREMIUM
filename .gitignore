@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+build/
+*.apk
+*.aar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Kotlin/Java
+*.class
+*.jar.bak
+*.jar.orig
+
+# Local development
+local.properties
+gradle.properties
+
+# Backup
+*.bak
+*.tmp
