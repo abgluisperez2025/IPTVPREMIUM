@@ -18,12 +18,30 @@ class IPTVPremium : MainAPI() {
     override val hasDownloadSupport = false
     override val supportedTypes     = setOf(TvType.Live)
 
+    override val settingsForProvider = listOf(
+        CustomSite(
+            "customPlaylistUrl",
+            "URL personalizada de lista M3U",
+            "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPREMIUM_optimizada.m3u",
+            "Si deseas usar una lista diferente, ingresa la URL aquí"
+        )
+    )
+
     // CACHE EN MEMORIA: descarga y parsea la lista UNA sola vez.
     companion object {
         private var cachePlaylist: Playlist? = null
         private var cacheTimestamp: Long = 0L
         private const val CACHE_TTL_MS = 30 * 60 * 1000L
         private val mutex = Mutex()
+    }
+
+    private fun getPlaylistUrl(): String {
+        return try {
+            val customUrl = getKey<String>("customPlaylistUrl")
+            if (!customUrl.isNullOrBlank()) customUrl else mainUrl
+        } catch (e: Exception) {
+            mainUrl
+        }
     }
 
     private suspend fun obtenerPlaylist(): Playlist {
@@ -34,9 +52,27 @@ class IPTVPremium : MainAPI() {
             cachePlaylist?.let {
                 if (System.currentTimeMillis() - cacheTimestamp < CACHE_TTL_MS) return@withLock it
             }
-            Log.d("IPTVPremium", "Descargando lista (una sola vez)")
-            val texto    = app.get(mainUrl).text
-            val playlist = IptvPlaylistParser().parseM3U(texto)
+            Log.d("IPTVPremium", "Descargando lista")
+            val url = getPlaylistUrl()
+            
+            // Intenta streaming primero (mejor para archivos grandes)
+            val playlist = try {
+                Log.d("IPTVPremium", "Intentando descarga en streaming")
+                val response = app.get(url)
+                IptvPlaylistParser().parseM3U(response.body.byteStream())
+            } catch (e: Exception) {
+                Log.w("IPTVPremium", "Streaming falló, intentando método alternativo: ${e.message}")
+                try {
+                    // Fallback: descarga completa pero con timeout
+                    val response = app.get(url, timeout = 120L)
+                    val content = response.text
+                    IptvPlaylistParser().parseM3U(content)
+                } catch (e2: Exception) {
+                    Log.e("IPTVPremium", "Ambos métodos fallaron: ${e2.message}")
+                    Playlist(emptyList())
+                }
+            }
+            
             cachePlaylist  = playlist
             cacheTimestamp = System.currentTimeMillis()
             playlist
