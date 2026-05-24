@@ -2,25 +2,24 @@
     {
         "url": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPlayer.cs3",
         "status": 1,
-        "version": 6,
+        "version": 7,
         "name": "IPTVPlayer",
         "internalName": "IPTVPlayer",
         "authors": [
-            "Phisher98",
-            "Adippe"
+            "Luis",
         ],
-        "description": "IPTV Player",
+        "description": "IPTV Player Premium - 77000+ canales",
         "fileSize": 18382,
         "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
-        "language": "hi",
+        "language": "es",
         "tvTypes": [
             "Live"
         ],
         "iconUrl": "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/Icons/IPTV.png",
         "apiVersion": 1,
         "fileHash": "sha256-bd01807e039e86004278cdd21b88940bf668d493d7b41688ffbea152337ee4f4",
-        "jarFileSize": 74806,
+        "jarFileSize": 74834,
         "jarUrl": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPlayer.jar",
-        "jarHash": "sha256-fc5209a59ad22cb01362deb89645bb2f2a99dd3499e6b82cd72e0b8e59069eee"
+        "jarHash": "sha256-73e1594564b3ea6e7c008c6a3e022e3fc70180c00752c74f6e9af69e4b66e8e5"
     }
 ]
