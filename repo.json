@@ -1,9 +1,0 @@
-{
-    "name": "IPTVPREMIUM",
-    "iconUrl": "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/Icons/IPTV.png",
-    "description": "IPTV Premium Repository",
-    "manifestVersion": 1,
-    "pluginLists": [
-      "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/refs/heads/builds/plugins.json"
-    ]
-}
