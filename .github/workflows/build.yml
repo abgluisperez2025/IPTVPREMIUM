@@ -1,231 +1,58 @@
-import com.android.build.api.dsl.LibraryExtension
-import com.lagradost.cloudstream3.gradle.CloudstreamExtension
-import org.gradle.api.JavaVersion
-import org.gradle.api.Project
-import org.gradle.api.tasks.Delete
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+name: Build IPTVPremium Plugin
 
-// ================================
-// VERSIONES CENTRALIZADAS
-// ================================
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-object Versions {
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-    // Core
-  const val agp = "8.8.2"
-  const val kotlin = "2.3.20"
-  const val gradleJvm = "17"
-  
-  // Android
-  const val compileSdk = 35
-  const val minSdk = 21
-  const val targetSdk = 35
-  
-  // Libraries
-  const val niceHttp = "0.4.11"
-  const val jsoup = "1.19.1"
-  const val jackson = "2.18.2"
-  const val coroutines = "1.10.2"
-}
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          ref: main
 
-// ================================
-// BUILD SCRIPT
-// ================================
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-buildscript {
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-    repositories {
-        google()
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
+      - name: Dar permisos a gradlew
+        run: chmod +x gradlew
 
-    dependencies {
+      - name: Compilar plugin
+        run: ./gradlew :IPTVPremium:make
 
-        // Android Gradle Plugin
-        classpath("com.android.tools.build:gradle:${Versions.agp}")
+      - name: Checkout rama builds
+        uses: actions/checkout@v4
+        with:
+          ref: builds
+          path: builds-branch
 
-        // Kotlin
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}")
+      - name: Copiar plugin a builds
+        run: |
+          cp IPTVPremium/build/IPTVPremium.cs3 builds-branch/IPTVPremium.cs3
 
-        // Cloudstream Plugin
-        classpath("com.github.recloudstream:gradle:master-SNAPSHOT")
-    }
-}
+          JAR_HASH=$(sha256sum builds-branch/IPTVPremium.cs3 | cut -d' ' -f1)
+          JAR_SIZE=$(wc -c < builds-branch/IPTVPremium.cs3)
 
-// ================================
-// REPOSITORIES
-// ================================
+          printf '[{"url":"https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPremium.cs3","status":1,"version":1,"name":"IPTV Premium","internalName":"IPTVPremium","authors":["abgluisperez2025"],"description":"IPTV Premium - 77000+ canales en español","fileSize":%s,"repositoryUrl":"https://github.com/abgluisperez2025/IPTVPREMIUM","language":"es","tvTypes":["Live"],"iconUrl":"https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/Icons/IPTV.png","apiVersion":1,"fileHash":"sha256-%s","jarFileSize":%s,"jarUrl":"https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPremium.cs3","jarHash":"sha256-%s"}]' \
+          "$JAR_SIZE" "$JAR_HASH" "$JAR_SIZE" "$JAR_HASH" \
+          > builds-branch/plugins.json
 
-allprojects {
-
-    repositories {
-        google()
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
-}
-
-// ================================
-// EXTENSIONS
-// ================================
-
-fun Project.cloudstream(
-    configuration: CloudstreamExtension.() -> Unit
-) {
-    extensions.configure(
-        CloudstreamExtension::class.java,
-        configuration
-    )
-}
-
-fun Project.android(
-    configuration: LibraryExtension.() -> Unit
-) {
-    extensions.configure(
-        LibraryExtension::class.java,
-        configuration
-    )
-}
-
-// ================================
-// SUBPROJECTS
-// ================================
-
-subprojects {
-
-    apply(plugin = "com.android.library")
-    apply(plugin = "org.jetbrains.kotlin.android")
-    apply(plugin = "com.lagradost.cloudstream3.gradle")
-
-    // ================================
-    // CLOUDSTREAM
-    // ================================
-
-    cloudstream {
-
-        setRepo(
-            System.getenv("GITHUB_REPOSITORY")
-                ?: "https://github.com/keyiflerolsun/Kekik-cloudstream"
-        )
-
-        authors = listOf(
-            "keyiflerolsun"
-        )
-    }
-
-    // ================================
-    // ANDROID
-    // ================================
-
-    android {
-
-        namespace = "com.keyiflerolsun"
-
-        compileSdk = Versions.compileSdk
-
-        defaultConfig {
-
-            minSdk = Versions.minSdk
-
-            targetSdk = Versions.targetSdk
-        }
-
-        compileOptions {
-
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
-        }
-    }
-
-    // ================================
-    // KOTLIN
-    // ================================
-
-    tasks.withType(KotlinCompile::class.java).configureEach {
-
-        compilerOptions {
-
-            jvmTarget.set(
-                JvmTarget.fromTarget(Versions.gradleJvm)
-            )
-
-            freeCompilerArgs.addAll(
-                listOf(
-
-                    // Reduce runtime checks
-                    "-Xno-call-assertions",
-                    "-Xno-param-assertions",
-                    "-Xno-receiver-assertions",
-
-                    // Better defaults
-                    "-Xjvm-default=all",
-
-                    // Context receivers support
-                    "-Xcontext-receivers"
-                )
-            )
-        }
-    }
-
-    // ================================
-    // DEPENDENCIES
-    // ================================
-
-    dependencies {
-
-        // Cloudstream API
-        add(
-            "cloudstream",
-            "com.lagradost:cloudstream3:pre-release"
-        )
-
-        // Kotlin Stdlib
-        add(
-            "implementation",
-            kotlin("stdlib")
-        )
-
-        // NiceHttp
-        add(
-            "implementation",
-            "com.github.Blatzar:NiceHttp:${Versions.niceHttp}"
-        )
-
-        // Jsoup
-        add(
-            "implementation",
-            "org.jsoup:jsoup:${Versions.jsoup}"
-        )
-
-        // Jackson Kotlin
-        add(
-            "implementation",
-            "com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}"
-        )
-
-        // Jackson Databind
-        add(
-            "implementation",
-            "com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}"
-        )
-
-        // Coroutines
-        add(
-            "implementation",
-            "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
-        )
-    }
-}
-
-// ================================
-// CLEAN TASK
-// ================================
-
-tasks.register<Delete>("clean") {
-
-    delete(
-        rootProject.layout.buildDirectory
-    )
-}
+      - name: Push a builds
+        run: |
+          cd builds-branch
+          git config user.email "abgluisperez@gmail.com"
+          git config user.name "abgluisperez2025"
+          git add IPTVPremium.cs3 plugins.json
+          git commit -m "Build: IPTVPremium compilado" || echo "Sin cambios"
+          git push
