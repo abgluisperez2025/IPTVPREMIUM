@@ -35,7 +35,7 @@ class IPTVPremium : MainAPI() {
             "iptv_url",
             "URL IPTV M3U",
             "",
-            "Pega aquí tu enlace M3U"
+            "http://kazan-tv.com:8091/get.php?username=AlbertoMi&password=FTud8386d&type=m3u_plus"
         )
     )
 
