@@ -1,0 +1,231 @@
+import com.android.build.api.dsl.LibraryExtension
+import com.lagradost.cloudstream3.gradle.CloudstreamExtension
+import org.gradle.api.JavaVersion
+import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+// ================================
+// VERSIONES CENTRALIZADAS
+// ================================
+
+object Versions {
+
+    // Core
+  const val agp = "8.8.2"
+  const val kotlin = "2.3.20"
+  const val gradleJvm = "17"
+  
+  // Android
+  const val compileSdk = 35
+  const val minSdk = 21
+  const val targetSdk = 35
+  
+  // Libraries
+  const val niceHttp = "0.4.11"
+  const val jsoup = "1.19.1"
+  const val jackson = "2.18.2"
+  const val coroutines = "1.10.2"
+}
+
+// ================================
+// BUILD SCRIPT
+// ================================
+
+buildscript {
+
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+
+    dependencies {
+
+        // Android Gradle Plugin
+        classpath("com.android.tools.build:gradle:${Versions.agp}")
+
+        // Kotlin
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}")
+
+        // Cloudstream Plugin
+        classpath("com.github.recloudstream:gradle:master-SNAPSHOT")
+    }
+}
+
+// ================================
+// REPOSITORIES
+// ================================
+
+allprojects {
+
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
+
+// ================================
+// EXTENSIONS
+// ================================
+
+fun Project.cloudstream(
+    configuration: CloudstreamExtension.() -> Unit
+) {
+    extensions.configure(
+        CloudstreamExtension::class.java,
+        configuration
+    )
+}
+
+fun Project.android(
+    configuration: LibraryExtension.() -> Unit
+) {
+    extensions.configure(
+        LibraryExtension::class.java,
+        configuration
+    )
+}
+
+// ================================
+// SUBPROJECTS
+// ================================
+
+subprojects {
+
+    apply(plugin = "com.android.library")
+    apply(plugin = "org.jetbrains.kotlin.android")
+    apply(plugin = "com.lagradost.cloudstream3.gradle")
+
+    // ================================
+    // CLOUDSTREAM
+    // ================================
+
+    cloudstream {
+
+        setRepo(
+            System.getenv("GITHUB_REPOSITORY")
+                ?: "https://github.com/keyiflerolsun/Kekik-cloudstream"
+        )
+
+        authors = listOf(
+            "keyiflerolsun"
+        )
+    }
+
+    // ================================
+    // ANDROID
+    // ================================
+
+    android {
+
+        namespace = "com.keyiflerolsun"
+
+        compileSdk = Versions.compileSdk
+
+        defaultConfig {
+
+            minSdk = Versions.minSdk
+
+            targetSdk = Versions.targetSdk
+        }
+
+        compileOptions {
+
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+    }
+
+    // ================================
+    // KOTLIN
+    // ================================
+
+    tasks.withType(KotlinCompile::class.java).configureEach {
+
+        compilerOptions {
+
+            jvmTarget.set(
+                JvmTarget.fromTarget(Versions.gradleJvm)
+            )
+
+            freeCompilerArgs.addAll(
+                listOf(
+
+                    // Reduce runtime checks
+                    "-Xno-call-assertions",
+                    "-Xno-param-assertions",
+                    "-Xno-receiver-assertions",
+
+                    // Better defaults
+                    "-Xjvm-default=all",
+
+                    // Context receivers support
+                    "-Xcontext-receivers"
+                )
+            )
+        }
+    }
+
+    // ================================
+    // DEPENDENCIES
+    // ================================
+
+    dependencies {
+
+        // Cloudstream API
+        add(
+            "cloudstream",
+            "com.lagradost:cloudstream3:pre-release"
+        )
+
+        // Kotlin Stdlib
+        add(
+            "implementation",
+            kotlin("stdlib")
+        )
+
+        // NiceHttp
+        add(
+            "implementation",
+            "com.github.Blatzar:NiceHttp:${Versions.niceHttp}"
+        )
+
+        // Jsoup
+        add(
+            "implementation",
+            "org.jsoup:jsoup:${Versions.jsoup}"
+        )
+
+        // Jackson Kotlin
+        add(
+            "implementation",
+            "com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jackson}"
+        )
+
+        // Jackson Databind
+        add(
+            "implementation",
+            "com.fasterxml.jackson.core:jackson-databind:${Versions.jackson}"
+        )
+
+        // Coroutines
+        add(
+            "implementation",
+            "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutines}"
+        )
+    }
+}
+
+// ================================
+// CLEAN TASK
+// ================================
+
+tasks.register<Delete>("clean") {
+
+    delete(
+        rootProject.layout.buildDirectory
+    )
+}
