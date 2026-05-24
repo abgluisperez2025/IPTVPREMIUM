@@ -7,15 +7,15 @@
         "internalName": "IPTVPremium",
         "authors": ["abgluisperez2025"],
         "description": "IPTV Premium - 77000+ canales en español",
-        "fileSize": 19167,
+        "fileSize": 20045,
         "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
         "language": "es",
         "tvTypes": ["Live"],
         "iconUrl": "https://raw.githubusercontent.com/phisher98/TVVVV/refs/heads/main/Icons/IPTV.png",
         "apiVersion": 1,
-        "fileHash": "sha256-9f177247f3fa2aa8be322f154ef6f40392fe8a4e59eac32ab16055a4259b20e8",
-        "jarFileSize": 19167,
+        "fileHash": "sha256-bbab1e2b4fd5b3387a03efb58d12519386fab04436b06354e4202ca9114015df",
+        "jarFileSize": 20045,
         "jarUrl": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPremium.cs3",
-        "jarHash": "sha256-9f177247f3fa2aa8be322f154ef6f40392fe8a4e59eac32ab16055a4259b20e8"
+        "jarHash": "sha256-bbab1e2b4fd5b3387a03efb58d12519386fab04436b06354e4202ca9114015df"
     }
 ]
