@@ -1,11 +1,7 @@
 class IPTVPremium : MainAPI() {
 
-    override var name = "IPTV Premium"
-    override var mainUrl = "https://google.com"
-    override var lang = "es"
+override var mainUrl =
+    "http://kazan-tv.com:8091"
 
-    override val hasMainPage = true
-    override val hasQuickSearch = true
-    override val supportedTypes = setOf(TvType.Live)
-
-}
+private val playlistUrl =
+    "http://kazan-tv.com:8091/get.php?username=AlbertoMi&password=FTud8386d&type=m3u_plus"
