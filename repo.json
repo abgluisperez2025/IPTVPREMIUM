@@ -1,11 +1,11 @@
 {
-  "repositoryUrl": "https://github.com/abgluisperez/IPTVLUIS",
+  "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
   "version": 1,
   "name": "Mi Repositorio IPTV Mejorado",
   "description": "IPTVPlayer Extension - Versi\u00c3\u00b3n Mejorada",
   "plugins": [
     {
-      "url": "https://raw.githubusercontent.com/abgluisperez/IPTVLUIS/main/builds/IPTVPlayer.cs3",
+      "url": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/main/builds/IPTVPlayer.cs3",
       "status": 1,
       "version": 7,
       "name": "IPTVPlayer",
@@ -14,20 +14,21 @@
         "Phisher98",
         "Adippe",
         "TU_USUARIO",
-        "abgluisperez"
+        "abgluisperez",
+        "abgluisperez2025"
       ],
       "description": "IPTV Player - Mejorado con parsing robusto y cach\u00c3\u00a9",
       "fileSize": 18382,
-      "repositoryUrl": "https://github.com/abgluisperez/IPTVLUIS",
+      "repositoryUrl": "https://github.com/abgluisperez2025/IPTVPREMIUM",
       "language": "es",
       "tvTypes": [
         "Live"
       ],
-      "iconUrl": "https://raw.githubusercontent.com/abgluisperez/IPTVLUIS/main/IPTVPlayer/res/icon.png",
+      "iconUrl": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/main/IPTVPlayer/res/icon.png",
       "apiVersion": 1,
       "fileHash": "sha256-fc5209a59ad22cb01362deb89645bb2f2a99dd3499e6b82cd72e0b8e59069eee",
       "jarFileSize": 74806,
-      "jarUrl": "https://raw.githubusercontent.com/abgluisperez/IPTVLUIS/main/builds/IPTVPlayer.jar",
+      "jarUrl": "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/main/builds/IPTVPlayer.jar",
       "jarHash": "sha256-fc5209a59ad22cb01362deb89645bb2f2a99dd3499e6b82cd72e0b8e59069eee"
     }
   ]
