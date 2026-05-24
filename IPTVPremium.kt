@@ -11,214 +11,193 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.InputStream
 
 class IPTVPremium : MainAPI() {
-    override var mainUrl            = "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPREMIUM_optimizada.m3u"
-    override var name               = "IPTV Premium"
-    override val hasMainPage        = true
-    override var lang               = "es"
-    override val hasQuickSearch     = true
-    override val hasDownloadSupport = false
-    override val supportedTypes     = setOf(TvType.Live)
 
+    override var name = "IPTV Premium"
+    override var mainUrl = ""
+    override var lang = "es"
+    override val hasMainPage = true
+    override val hasQuickSearch = true
+    override val supportedTypes = setOf(TvType.Live)
+
+    companion object {
+        private val client = OkHttpClient()
+        private val mutex = Mutex()
+        private var cache: List<PlaylistItem>? = null
+        private var cacheTime = 0L
+        private const val TTL = 5 * 60 * 1000L
+    }
+
+    // ===== SETTINGS (URL editable en menú) =====
     override val settingsForProvider = listOf(
         CustomSite(
-            "customPlaylistUrl",
-            "URL personalizada de lista M3U",
-            "https://raw.githubusercontent.com/abgluisperez2025/IPTVPREMIUM/builds/IPTVPREMIUM_optimizada.m3u",
-            "Ingresa la URL de tu lista M3U"
+            "iptv_url",
+            "URL IPTV M3U",
+            "",
+            "Pega aquí tu enlace M3U"
         )
     )
 
-    companion object {
-        private val mutex = Mutex()
-        private val okHttpClient by lazy { OkHttpClient.Builder().build() }
-        @Volatile private var categoriesCache: Map<String, List<PlaylistItem>>? = null
-        @Volatile private var cacheTimestamp: Long = 0L
-        private const val CACHE_TTL_MS = 5 * 60 * 1000L
-        private val ATTRIBUTES_REGEX = """(\w+)="([^"]*)""".toRegex()
-    }
-
-    private fun getPlaylistUrl(): String {
+    private fun getUrl(): String {
         return try {
-            val customUrl = getKey<String>("customPlaylistUrl")
-            if (!customUrl.isNullOrBlank()) customUrl else mainUrl
+            getKey<String>("iptv_url").takeIf { !it.isNullOrBlank() } ?: mainUrl
         } catch (e: Exception) {
             mainUrl
         }
     }
 
-    private suspend fun obtenerCategorias(): Map<String, List<PlaylistItem>> = withContext(Dispatchers.IO) {
-        categoriesCache?.let {
-            if (System.currentTimeMillis() - cacheTimestamp < CACHE_TTL_MS) return@withContext it
+    // ===== PARSER M3U =====
+    private suspend fun loadPlaylist(): List<PlaylistItem> = withContext(Dispatchers.IO) {
+        cache?.let {
+            if (System.currentTimeMillis() - cacheTime < TTL) return@withContext it
         }
+
         mutex.withLock {
-            categoriesCache?.let {
-                if (System.currentTimeMillis() - cacheTimestamp < CACHE_TTL_MS) return@withLock it
+            cache?.let {
+                if (System.currentTimeMillis() - cacheTime < TTL) return@withLock it
             }
-            Log.d("IPTVPremium", "Leyendo lista por streaming (línea por línea)")
-            val url = getPlaylistUrl()
-            val categorias = mutableMapOf<String, MutableList<PlaylistItem>>()
 
-            val previousCache = categoriesCache
-            try {
-                val request = Request.Builder().url(url).build()
-                okHttpClient.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) throw Exception("HTTP ${response.code}")
-                    val body = response.body ?: throw Exception("Sin body")
-                    body.byteStream().bufferedReader().use { reader ->
-                        while (true) {
-                            val line = reader.readLine() ?: break
-                            if (line.isBlank()) continue
-                            if (!line.trimStart().startsWith("#EXTINF:")) continue
+            val url = getUrl()
+            Log.d("IPTV", "Cargando: $url")
 
-                            val attrs = line.extractAttributes()
-                            val titulo = line.substringAfterLast(",").trim()
-                            var nextLine: String? = null
-                            while (true) {
-                                val candidate = reader.readLine() ?: break
-                                if (candidate.isBlank()) continue
-                                if (candidate.trimStart().startsWith("#")) continue
-                                nextLine = candidate.trim()
-                                break
+            val list = mutableListOf<PlaylistItem>()
+
+            val request = Request.Builder().url(url).build()
+
+            client.newCall(request).execute().use { res ->
+                if (!res.isSuccessful) throw Exception("HTTP ${res.code}")
+
+                val body = res.body?.string() ?: return@use
+
+                val lines = body.split("\n")
+
+                var title = ""
+                var logo = ""
+                var group = ""
+
+                for (line in lines) {
+                    when {
+                        line.startsWith("#EXTINF") -> {
+                            title = line.substringAfterLast(",").trim()
+
+                            val regex = Regex("""(\w+)="([^"]*)"""")
+                            regex.findAll(line).forEach {
+                                when (it.groupValues[1]) {
+                                    "tvg-logo" -> logo = it.groupValues[2]
+                                    "group-title" -> group = it.groupValues[2]
+                                }
                             }
+                        }
 
-                            if (!nextLine.isNullOrBlank()) {
-                                val categoria = attrs["group-title"].orEmpty().trim().ifBlank { "Sin categoría" }
-                                val item = PlaylistItem(
-                                    title = titulo,
-                                    url = nextLine,
-                                    category = categoria,
-                                    poster = attrs["tvg-logo"].orEmpty(),
-                                    country = attrs["tvg-country"].orEmpty()
+                        line.startsWith("http") -> {
+                            list.add(
+                                PlaylistItem(
+                                    title = title,
+                                    url = line.trim(),
+                                    category = group.ifBlank { "General" },
+                                    poster = logo
                                 )
-                                categorias.getOrPut(categoria) { mutableListOf() }.add(item)
-                            }
+                            )
                         }
                     }
                 }
-                Log.d("IPTVPremium", "Lectura completada: ${categorias.size} categorías")
-            } catch (e: Exception) {
-                Log.e("IPTVPremium", "Error leyendo lista: ${e.message}")
-                return@withContext previousCache ?: emptyMap()
             }
 
-            categoriesCache = categorias
-            cacheTimestamp = System.currentTimeMillis()
-            categorias
+            cache = list
+            cacheTime = System.currentTimeMillis()
+
+            list
         }
     }
 
+    // ===== MAIN PAGE =====
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val categorias = obtenerCategorias()
-        val secciones = categorias.map { (titulo, items) ->
-            HomePageList(titulo, items.map { it.toSearchResponse(this) }, isHorizontalImages = true)
+        val items = loadPlaylist()
+
+        val grouped = items.groupBy { it.category }
+
+        val pages = grouped.map { (cat, list) ->
+            HomePageList(
+                cat,
+                list.map {
+                    newLiveSearchResponse(
+                        it.title,
+                        it.toJson(),
+                        TvType.Live
+                    ) {
+                        this.posterUrl = it.poster
+                    }
+                },
+                isHorizontalImages = true
+            )
         }
-        return newHomePageResponse(secciones, hasNext = false)
+
+        return newHomePageResponse(pages, hasNext = false)
     }
 
+    // ===== SEARCH =====
     override suspend fun search(query: String): List<SearchResponse> {
-        val categorias = obtenerCategorias()
-        if (query.isBlank()) return emptyList()
+        val items = loadPlaylist()
 
-        val q = query
-        val resultados = mutableListOf<SearchResponse>()
-        for (items in categorias.values) {
-            for (item in items) {
-                if (item.title.contains(q, ignoreCase = true)) {
-                    resultados.add(item.toSearchResponse(this))
-                }
+        return items.filter {
+            it.title.contains(query, ignoreCase = true)
+        }.map {
+            newLiveSearchResponse(
+                it.title,
+                it.toJson(),
+                TvType.Live
+            ) {
+                this.posterUrl = it.poster
             }
         }
-        return resultados
     }
 
-    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query)
+    override suspend fun quickSearch(query: String) = search(query)
 
+    // ===== LOAD =====
     override suspend fun load(url: String): LoadResponse {
-        val datos   = obtenerDatos(url)
-        val categorias = obtenerCategorias()
-        val itemsEnCategoria = categorias[datos.categoria] ?: emptyList()
-        val recomendaciones = itemsEnCategoria
-            .filter { it.title.toString() != datos.nombre }
-            .take(30)
-            .map { it.toSearchResponse(this) }
+        val data = parseJson<PlaylistItem>(url)
 
-        return newLiveStreamLoadResponse(datos.nombre, datos.url, url) {
-            this.posterUrl       = datos.poster
-            this.plot            = "📺 ${datos.categoria}"
-            this.tags            = listOf(datos.categoria, datos.pais)
-            this.recommendations = recomendaciones
+        return newLiveStreamLoadResponse(
+            data.title,
+            data.url,
+            url
+        ) {
+            this.posterUrl = data.poster
+            this.plot = data.category
         }
     }
 
+    // ===== PLAY =====
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val datos = obtenerDatos(data)
+
+        val item = parseJson<PlaylistItem>(data)
 
         callback.invoke(
             newExtractorLink(
-                source = this.name,
-                name   = datos.nombre,
-                url    = datos.url,
-                type   = ExtractorLinkType.M3U8
+                source = name,
+                name = item.title,
+                url = item.url,
+                type = ExtractorLinkType.M3U8
             ) {
-                this.quality = Qualities.Unknown.value
+                quality = Qualities.Unknown.value
             }
         )
+
         return true
-    }
-
-    private fun String.extractAttributes(): Map<String, String> {
-        val attrs = mutableMapOf<String, String>()
-        ATTRIBUTES_REGEX.findAll(this).forEach { match ->
-            attrs[match.groupValues[1]] = match.groupValues[2]
-        }
-        return attrs
-    }
-
-    private fun PlaylistItem.toSearchResponse(api: MainAPI): LiveSearchResponse {
-        return api.newLiveSearchResponse(
-            title,
-            DatosCanal(url, title, poster, category, country).toJson(),
-            type = TvType.Live
-        ) {
-            this.posterUrl = poster
-        }
-    }
-
-    data class DatosCanal(
-        val url: String,
-        val nombre: String,
-        val poster: String,
-        val categoria: String,
-        val pais: String
-    )
-
-    private suspend fun obtenerDatos(data: String): DatosCanal {
-        return runCatching {
-            parseJson<DatosCanal>(data)
-        }.getOrElse {
-            DatosCanal(
-                url = data,
-                nombre = "Canal",
-                poster = "",
-                categoria = "",
-                pais = ""
-            )
-        }
     }
 }
 
+// ===== DATA =====
 data class PlaylistItem(
-    val title    : String,
-    val url      : String,
-    val category : String,
-    val poster   : String = "",
-    val country  : String = ""
+    val title: String,
+    val url: String,
+    val category: String = "General",
+    val poster: String = ""
 )
