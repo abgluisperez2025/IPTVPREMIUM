@@ -1,5 +1,5 @@
 dependencies {
-    implementation("com.google.android.material:material:1.4.0")
+    implementation("com.google.android.material:material:1.14.0")
 }
 
 // use an integer for version numbers
@@ -33,6 +33,6 @@ cloudstream {
     )
 
     iconUrl = "https://www.shutterstock.com/image-vector/iptv-vector-line-icon-ip-260nw-1841427610.jpg"
-    description = "Cần nhập link IPTV để xem"
+    description = "Gestione IPTV"
     requiresResources = true
 }
