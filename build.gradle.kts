@@ -62,6 +62,7 @@ subprojects {
                     "-Xno-call-assertions",
                     "-Xno-param-assertions",
                     "-Xno-receiver-assertions"
+                    // -Werror eliminado, esto causaba el error
                 )
             }
         }
@@ -71,7 +72,6 @@ subprojects {
         val cloudstream by configurations
         val implementation by configurations
 
-        // Stubs for all Cloudstream classes
         cloudstream("com.lagradost:cloudstream3:pre-release")
 
         implementation(kotlin("stdlib"))
