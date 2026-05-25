@@ -57,6 +57,9 @@ subprojects {
 
         tasks.withType<KotlinJvmCompile> {
             compilerOptions {
+                // AGREGA ESTA LÍNEA AQUÍ
+                allWarningsAsErrors.set(false) 
+                
                 jvmTarget.set(JvmTarget.JVM_1_8)
                 freeCompilerArgs.addAll(
                     "-Xno-call-assertions",
@@ -65,7 +68,6 @@ subprojects {
                 )
             }
         }
-    }
 
     dependencies {
         val cloudstream by configurations
