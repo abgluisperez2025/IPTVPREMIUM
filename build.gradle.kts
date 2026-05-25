@@ -79,7 +79,7 @@ subprojects {
         // https://github.com/recloudstream/cloudstream/blob/master/app/build.gradle.kts
 
         implementation(kotlin("stdlib")) // adds standard kotlin features, like listOf, mapOf etc
-        implementation("com.github.Blatzar:NiceHttp:0.4.18") // http library
+        implementation("com.github.Blatzar:NiceHttp:+")
         implementation("org.jsoup:jsoup:1.22.2") // html parser
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.3")
         implementation("com.squareup.okhttp3:okhttp:5.3.2")
