@@ -12,10 +12,10 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("com.android.tools.build:gradle:9.5.1")
         // Cloudstream gradle plugin which makes everything work and builds plugins
         classpath("com.github.recloudstream:gradle:-SNAPSHOT")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
     }
 }
 
@@ -38,7 +38,7 @@ subprojects {
 
     cloudstream {
         // compatible with other git hosting services, like gitlab, gitDab, codeBerg
-        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://gitlab.com/tearrs/cloudstream-vietnamese")
+        setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/abgluisperez2025/IPTVPREMIUM")
     }
 
     android {
@@ -79,13 +79,13 @@ subprojects {
         // https://github.com/recloudstream/cloudstream/blob/master/app/build.gradle.kts
 
         implementation(kotlin("stdlib")) // adds standard kotlin features, like listOf, mapOf etc
-        implementation("com.github.Blatzar:NiceHttp:0.4.12") // http library
-        implementation("org.jsoup:jsoup:1.18.3") // html parser
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
-        implementation("com.squareup.okhttp3:okhttp:4.12.0")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-        implementation("org.mozilla:rhino:1.8.0") //run JS
-        implementation("com.google.code.gson:gson:2.8.8")
+        implementation("com.github.Blatzar:NiceHttp:0.4.18") // http library
+        implementation("org.jsoup:jsoup:1.22.2") // html parser
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.3")
+        implementation("com.squareup.okhttp3:okhttp:5.3.2")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+        implementation("org.mozilla:rhino:1.9.1") //run JS
+        implementation("com.google.code.gson:gson:2.14.0")
     }
 }
 
