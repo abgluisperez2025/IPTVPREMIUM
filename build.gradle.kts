@@ -75,7 +75,6 @@ subprojects {
         cloudstream("com.lagradost:cloudstream3:pre-release")
 
         implementation(kotlin("stdlib"))
-        implementation("com.github.Blatzar:NiceHttp:+")
         implementation("org.jsoup:jsoup:1.22.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.3")
         implementation("com.squareup.okhttp3:okhttp:5.3.2")
