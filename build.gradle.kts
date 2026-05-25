@@ -7,13 +7,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        // Shitpack repo which contains our tools and dependencies
         maven("https://jitpack.io")
     }
 
     dependencies {
         classpath("com.android.tools.build:gradle:8.7.3")
-        // Cloudstream gradle plugin which makes everything work and builds plugins
         classpath("com.github.recloudstream:gradle:-SNAPSHOT")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
     }
@@ -27,9 +25,11 @@ allprojects {
     }
 }
 
-fun Project.cloudstream(configuration: CloudstreamExtension.() -> Unit) = extensions.getByName<CloudstreamExtension>("cloudstream").configuration()
+fun Project.cloudstream(configuration: CloudstreamExtension.() -> Unit) = 
+    extensions.getByName<CloudstreamExtension>("cloudstream").configuration()
 
-fun Project.android(configuration: BaseExtension.() -> Unit) = extensions.getByName<BaseExtension>("android").configuration()
+fun Project.android(configuration: BaseExtension.() -> Unit) = 
+    extensions.getByName<BaseExtension>("android").configuration()
 
 subprojects {
     apply(plugin = "com.android.library")
@@ -37,7 +37,6 @@ subprojects {
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     cloudstream {
-        // compatible with other git hosting services, like gitlab, gitDab, codeBerg
         setRepo(System.getenv("GITHUB_REPOSITORY") ?: "https://github.com/abgluisperez2025/IPTVPREMIUM")
     }
 
@@ -64,8 +63,9 @@ subprojects {
                     "-Xno-param-assertions",
                     "-Xno-receiver-assertions"
                 )
-            } // <--- Esta cierra compilerOptions
-        } // <--- Esta cierra tasks.withType
+            }
+        }
+    }
 
     dependencies {
         val cloudstream by configurations
@@ -74,17 +74,13 @@ subprojects {
         // Stubs for all Cloudstream classes
         cloudstream("com.lagradost:cloudstream3:pre-release")
 
-        // these dependencies can include any of those which are added by the app,
-        // but you dont need to include any of them if you dont need them
-        // https://github.com/recloudstream/cloudstream/blob/master/app/build.gradle.kts
-
-        implementation(kotlin("stdlib")) // adds standard kotlin features, like listOf, mapOf etc
+        implementation(kotlin("stdlib"))
         implementation("com.github.Blatzar:NiceHttp:+")
-        implementation("org.jsoup:jsoup:1.22.2") // html parser
+        implementation("org.jsoup:jsoup:1.22.2")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.21.3")
         implementation("com.squareup.okhttp3:okhttp:5.3.2")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-        implementation("org.mozilla:rhino:1.9.1") //run JS
+        implementation("org.mozilla:rhino:1.9.1")
         implementation("com.google.code.gson:gson:2.14.0")
     }
 }
